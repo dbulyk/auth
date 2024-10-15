@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"time"
 
 	"github.com/fatih/color"
@@ -22,7 +23,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to connect to server: %v", err)
 	}
-	defer conn.Close()
+	defer func(conn *grpc.ClientConn) {
+		err = conn.Close()
+		if err != nil {
+			slog.Error("conn isn't closed", "error", err.Error())
+		}
+	}(conn)
 
 	c := desc.NewAuthV1Client(conn)
 
