@@ -14,12 +14,11 @@ import (
 )
 
 const (
-	address = "localhost:8001"
-	authID  = 12
+	address = "localhost:50051"
 )
 
 func main() {
-	conn, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("failed to connect to server: %v", err)
 	}
@@ -35,10 +34,10 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	r, err := c.Get(ctx, &desc.GetRequest{Id: authID})
+	r, err := c.Get(ctx, &desc.GetRequest{Id: 12})
 	if err != nil {
-		log.Panicf("failed to get note by id: %v", err)
+		log.Panicf("failed to get auth info by id: %v", err)
 	}
 
-	log.Printf(color.RedString("Note info:\n"), color.GreenString("%+v", r.GetName()))
+	log.Printf(color.RedString("Auth info:\n"), color.GreenString("%+v", r.GetName()))
 }
