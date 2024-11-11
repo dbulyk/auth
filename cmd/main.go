@@ -21,7 +21,7 @@ type server struct {
 }
 
 const (
-	grpcPort = 50051
+	grpcPort = 50052
 	dbDSN    = "host=localhost port=5432 dbname=postgres user=admin password=admin sslmode=disable"
 )
 
