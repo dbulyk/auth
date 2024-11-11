@@ -11,7 +11,7 @@ env:
   IMAGE_NAME: "auth"
   CONTAINER_NAME: "auth-container"
   DB_CONTAINER_NAME: "db-auth-container"
-  DB_IMAGE_NAME: "postgres:17"
+  DB_IMAGE_NAME: "db-auth"
 
 jobs:
   build-and-test:
@@ -77,7 +77,7 @@ jobs:
       - name: Build and Push Migrator Image
         run: |
           TAG_NAME=$(echo $GITHUB_SHA | head -c7)
-          docker buildx build --no-cache --push --tag $REGISTRY/auth_migrator:$TAG_NAME -f migration.Dockerfile .
+          docker buildx build --no-cache --push --tag $REGISTRY/$DB_IMAGE_NAME:$TAG_NAME -f migration.Dockerfile .
 
   deploy-image:
     runs-on: ubuntu-latest
@@ -90,7 +90,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSHKEY }}
-          envs: IMAGE_NAME,REGISTRY,GITHUB_SHA,CONTAINER_NAME
+          envs: IMAGE_NAME,REGISTRY,GITHUB_SHA,CONTAINER_NAME, DB_CONTAINER_NAME
           script: |
             # Устанавливаем значения переменных
             TAG_NAME=$(echo $GITHUB_SHA | head -c7)
@@ -98,17 +98,18 @@ jobs:
             # Логинимся в яндекс облако
             echo ${{ secrets.REGISTRY_TOKEN }} | sudo docker login --username oauth --password-stdin $REGISTRY
 
-            # запускаем контейнет
-            sudo docker stop $CONTAINER_NAME
-            sudo docker rm $CONTAINER_NAME
-            sudo docker run -d -p 50052:50052 --name $CONTAINER_NAME -t $REGISTRY/$IMAGE_NAME:$TAG_NAME
+            # запускаем контейнер
+            sudo docker stop $CONTAINER_NAME || echo "Контейнер $CONTAINER_NAME не запущен"
+            sudo docker rm $CONTAINER_NAME || echo "Контейнер $CONTAINER_NAME не существует"
+            sudo docker run -d -p 50052:50052 --name $CONTAINER_NAME -t $REGISTRY/$IMAGE_NAME:$TAG_NAME || \
+            echo "Ошибка запуска основного контейнера"
             
             # Запускаем мигратор
-            sudo docker stop auth_migrator || echo "Контейнер auth_migrator не запущен"
-            sudo docker rm auth_migrator || echo "Контейнер auth_migrator не существует"
-            sudo docker run --name auth_migrator \
+            sudo docker stop $DB_CONTAINER_NAME || echo "Контейнер $DB_CONTAINER_NAME не запущен"
+            sudo docker rm $DB_CONTAINER_NAME || echo "Контейнер $DB_CONTAINER_NAME не существует"
+            sudo docker run -d --name $DB_CONTAINER_NAME \
             --env-file .env \
-            -e DB_HOST=$DB_CONTAINER_NAME -t $REGISTRY/auth_migrator:$TAG_NAME || \
+            -e DB_HOST=$DB_CONTAINER_NAME -t $REGISTRY/$DB_IMAGE_NAME:$TAG_NAME || \
             echo "Ошибка запуска контейнера миграций"
             
             # удаляем образы старше 1 дня
