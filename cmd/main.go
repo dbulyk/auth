@@ -1,9 +1,8 @@
 package main
 
 import (
-	desc "auth/pkg/auth_v1"
 	"context"
-	"fmt"
+	"flag"
 	"log"
 	"net"
 	"time"
@@ -13,23 +12,46 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/emptypb"
+
+	"auth/internal/config"
+	"auth/internal/config/env"
+	desc "auth/pkg/auth_v1"
 )
+
+var configPath string
 
 type server struct {
 	desc.UnimplementedAuthV1Server
 	db *pgx.Conn
 }
 
-const (
-	grpcPort = 50052
-	dbDSN    = "host=localhost port=5432 dbname=postgres user=admin password=admin sslmode=disable"
-)
+// init записывает параметр конфига
+func init() {
+	flag.StringVar(&configPath, "config-path", ".env", "path to config file")
+}
 
 func main() {
+	flag.Parse()
+
+	err := config.Load(configPath)
+	if err != nil {
+		log.Fatalf("failed to load config: %v", err)
+	}
+
+	grpcConfig, err := env.NewGRPCConfig()
+	if err != nil {
+		log.Fatalf("failed to get grpc config: %v", err)
+	}
+
+	pgConfig, err := env.NewPGConfig()
+	if err != nil {
+		log.Fatalf("failed to get pg config: %v", err)
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	conn, err := pgx.Connect(ctx, dbDSN)
+	conn, err := pgx.Connect(ctx, pgConfig.DSN())
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
@@ -40,7 +62,7 @@ func main() {
 			log.Fatalf("failed to close connection: %v", err)
 		}
 	}(conn, ctx)
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	lis, err := net.Listen("tcp", grpcConfig.Address())
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
