@@ -14,6 +14,11 @@ type GRPCConfig interface {
 	Address() string
 }
 
+// HashConfig хранит ключ для хеширования паролей
+type HashConfig interface {
+	Key() string
+}
+
 // Load загружает во флаг считываемый путь
 func Load(path string) error {
 	err := godotenv.Load(path)

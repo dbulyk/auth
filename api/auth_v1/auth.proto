@@ -17,9 +17,10 @@ service AuthV1 {
 message CreateUserRequest {
   string name = 1;
   string email = 2;
-  string password = 3;
-  string password_confirm = 4;
-  Role role = 5;
+  string tag = 3;
+  string password = 4;
+  string password_confirm = 5;
+  Role role = 6;
 }
 
 message CreateUserResponse {
@@ -45,7 +46,9 @@ message UpdateUserRequest {
   string name = 2;
   string email = 3;
   string tag = 4;
-  Role role = 5;
+  string password = 5;
+  string passwordConfirm = 6;
+  Role role = 7;
 }
 
 message DeleteUserRequest {
