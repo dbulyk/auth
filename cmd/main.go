@@ -17,8 +17,10 @@ import (
 
 	"auth/internal/config"
 	"auth/internal/config/env"
+	"auth/internal/model"
 	"auth/internal/repository/auth"
-	"auth/internal/repository/auth/model"
+	"auth/internal/service"
+	"auth/internal/service/user"
 	desc "auth/pkg/auth_v1"
 )
 
@@ -26,7 +28,7 @@ var configPath string
 
 type server struct {
 	desc.UnimplementedAuthV1Server
-	repo *auth.Repo
+	service service.AuthService
 }
 
 // init записывает параметр конфига
@@ -72,9 +74,10 @@ func main() {
 	}
 
 	authRepo := auth.NewRepository(pool, hashConfig.Key())
+	authService := user.NewAuthService(authRepo)
 	s := grpc.NewServer()
 	reflection.Register(s)
-	desc.RegisterAuthV1Server(s, &server{repo: authRepo})
+	desc.RegisterAuthV1Server(s, &server{service: authService})
 
 	log.Printf("server listening at %v", lis.Addr())
 
@@ -94,7 +97,7 @@ func (s *server) CreateUser(ctx context.Context, in *desc.CreateUserRequest) (*d
 		PasswordConfirm: in.GetPasswordConfirm(),
 	}
 
-	userID, err := s.repo.CreateUser(ctx, user)
+	userID, err := s.service.CreateUserServ(ctx, user)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "ошибка создания пользователя: %v", err)
 	}
@@ -106,7 +109,7 @@ func (s *server) CreateUser(ctx context.Context, in *desc.CreateUserRequest) (*d
 
 // GetUser получает пользователя по id
 func (s *server) GetUser(ctx context.Context, in *desc.GetUserRequest) (*desc.GetUserResponse, error) {
-	user, err := s.repo.GetUser(ctx, in.GetId())
+	user, err := s.service.GetUserServ(ctx, in.GetId())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "ошибка получения данных пользователя: %v", err)
 	}
@@ -135,7 +138,7 @@ func (s *server) UpdateUser(ctx context.Context, in *desc.UpdateUserRequest) (*e
 		Password:        in.GetPassword(),
 		PasswordConfirm: in.GetPasswordConfirm(),
 	}
-	err := s.repo.UpdateUser(ctx, updateUser)
+	err := s.service.UpdateUserServ(ctx, updateUser)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "ошибка обновления данных пользователя: %v", err)
 	}
@@ -145,7 +148,7 @@ func (s *server) UpdateUser(ctx context.Context, in *desc.UpdateUserRequest) (*e
 
 // DeleteUser удаляет пользователя по id
 func (s *server) DeleteUser(ctx context.Context, in *desc.DeleteUserRequest) (*emptypb.Empty, error) {
-	err := s.repo.DeleteUser(ctx, in.GetId())
+	err := s.service.DeleteUserServ(ctx, in.GetId())
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "ошибка удаления пользователя: %v", err)
 	}

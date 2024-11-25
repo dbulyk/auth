@@ -3,7 +3,7 @@ package repository
 import (
 	"context"
 
-	"auth/internal/repository/auth/model"
+	"auth/internal/model"
 )
 
 // AuthRepository определяет взаимодействие с бд

@@ -13,8 +13,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"auth/internal/model"
 	"auth/internal/repository"
-	"auth/internal/repository/auth/model"
 )
 
 var _ repository.User = (*repoUser)(nil)
