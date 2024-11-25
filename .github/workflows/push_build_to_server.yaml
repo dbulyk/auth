@@ -8,10 +8,10 @@ on:
 
 env:
   REGISTRY: "cr.yandex/crpsrspk8oudvqj1v4vf"
-  IMAGE_NAME: "auth"
-  CONTAINER_NAME: "auth-container"
-  DB_CONTAINER_NAME: "db-auth-container"
-  DB_IMAGE_NAME: "db-auth"
+  IMAGE_NAME: "user"
+  CONTAINER_NAME: "user-container"
+  DB_CONTAINER_NAME: "db-user-container"
+  DB_IMAGE_NAME: "db-user"
 
 jobs:
   build-and-test:
@@ -55,12 +55,12 @@ jobs:
 #
 #      - name: Create .env file for CI
 #        run: |
-#          echo "PG_DATABASE_NAME=auth" >> .env
+#          echo "PG_DATABASE_NAME=user" >> .env
 #          echo "PG_USER=${{ secrets.PG_USER }}" >> .env
 #          echo "PG_PASSWORD=${{ secrets.PG_PASSWORD }}" >> .env
 #          echo "PG_PORT=5432" >> .env
 #          echo "MIGRATION_DIR=./migrations" >> .env
-#          echo "PG_DSN=host=$DB_CONTAINER_NAME port=5432 dbname=auth user=${{secrets.PG_USER}} password=${{secrets.PG_PASSWORD}} sslmod=disable" >> .env
+#          echo "PG_DSN=host=$DB_CONTAINER_NAME port=5432 dbname=user user=${{secrets.PG_USER}} password=${{secrets.PG_PASSWORD}} sslmod=disable" >> .env
 #
 #      - name: Set up Docker Buildx
 #        uses: docker/setup-buildx-action@v2

@@ -5,7 +5,7 @@ import "google/protobuf/empty.proto";
 
 package auth_v1;
 
-option go_package = "github.com/dbulyk/auth/pkg/auth_v1;auth_v1";
+option go_package = "github.com/dbulyk/user/pkg/auth_v1;auth_v1";
 
 service AuthV1 {
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);

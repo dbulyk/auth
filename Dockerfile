@@ -4,7 +4,7 @@ COPY . /github.com/dbulyk/auth/source
 WORKDIR /github.com/dbulyk/auth/source
 
 RUN go mod download
-RUN go build -o ./bin/auth cmd/main.go
+RUN go build -o ./bin/user cmd/main.go
 
 FROM alpine:latest
 
