@@ -1,13 +1,11 @@
-package env
+package config
 
 import (
 	"errors"
 	"os"
-
-	"auth/internal/config"
 )
 
-var _ config.HashConfig = (*hashConfig)(nil)
+var _ HashConfig = (*hashConfig)(nil)
 
 const key = "HASH_KEY"
 
@@ -17,12 +15,12 @@ type hashConfig struct {
 
 // NewHashConfig создает конфиг для хранения соли для хеширования паролей
 func NewHashConfig() (*hashConfig, error) {
-	key := os.Getenv(key)
-	if len(key) == 0 {
+	k := os.Getenv(key)
+	if len(k) == 0 {
 		return nil, errors.New("key for hash not found")
 	}
 
-	return &hashConfig{key: key}, nil
+	return &hashConfig{key: k}, nil
 }
 
 func (h *hashConfig) Key() string { return h.key }
