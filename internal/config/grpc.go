@@ -1,14 +1,12 @@
-package env
+package config
 
 import (
 	"errors"
 	"net"
 	"os"
-
-	"auth/internal/config"
 )
 
-var _ config.GRPCConfig = (*grpcConfig)(nil)
+var _ GRPCConfig = (*grpcConfig)(nil)
 
 const (
 	grpcHostEnvName = "GRPC_HOST"

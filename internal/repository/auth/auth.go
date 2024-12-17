@@ -1,8 +1,7 @@
 package auth
 
 import (
-	"github.com/jackc/pgx/v5/pgxpool"
-
+	"auth/internal/client/db"
 	"auth/internal/repository"
 )
 
@@ -14,7 +13,7 @@ type Repo struct {
 }
 
 // NewRepository создаёт репозиторий для действий с пользователями
-func NewRepository(db *pgxpool.Pool, key string) *Repo {
+func NewRepository(db db.Client, key string) *Repo {
 	return &Repo{
 		repoUser: repoUser{db: db, hashKey: key},
 	}
