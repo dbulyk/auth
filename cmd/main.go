@@ -1,6 +1,9 @@
 package main
 
 import (
+	"auth/internal/repository"
+	"auth/internal/service"
+	serv "auth/internal/service/user"
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
@@ -29,8 +32,8 @@ var configPath string
 
 type server struct {
 	desc.UnimplementedAuthV1Server
-	db      *pgx.Conn
-	hashKey string
+	userService service.UserService
+	hashKey     string
 }
 
 // init записывает параметр конфига
@@ -80,9 +83,12 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
+	userRepo := repository.NewUserRepository()
+	userService := serv.NewUserService(userRepo)
+
 	s := grpc.NewServer()
 	reflection.Register(s)
-	desc.RegisterAuthV1Server(s, &server{db: conn, hashKey: hashConfig.Key()})
+	desc.RegisterAuthV1Server(s, &server{userService: userService, hashKey: hashConfig.Key()})
 
 	log.Printf("server listening at %v", lis.Addr())
 

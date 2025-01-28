@@ -1,4 +1,4 @@
-package repository
+package service
 
 import (
 	"auth/internal/model"
@@ -6,7 +6,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-type UserRepository interface {
+type UserService interface {
 	CreateUser(ctx context.Context, in *model.CreateUserRequest) (int64, error)
 	GetUser(ctx context.Context, userID int64) (*model.GetUserResponse, error)
 	UpdateUser(ctx context.Context, in *model.UpdateUserRequest) (*emptypb.Empty, error)
