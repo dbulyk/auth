@@ -1,29 +1,31 @@
 package user
 
 import (
-	"auth/internal/model"
-	"auth/internal/repository"
-	"auth/internal/repository/user/converter"
-	modelRepo "auth/internal/repository/user/model"
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"time"
+
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"time"
+
+	"auth/internal/model"
+	"auth/internal/repository"
+	"auth/internal/repository/user/converter"
+	modelRepo "auth/internal/repository/user/model"
 )
 
 type repo struct {
 	db *pgxpool.Pool
 }
 
-func NewRepository(db *pgxpool.Pool) *repository.UserRepository {
+func NewRepository(db *pgxpool.Pool) repository.UserRepository {
 	return &repo{db: db}
 }
 

@@ -1,9 +1,11 @@
 package repository
 
 import (
-	"auth/internal/model"
 	"context"
+
 	"google.golang.org/protobuf/types/known/emptypb"
+
+	"auth/internal/model"
 )
 
 type UserRepository interface {

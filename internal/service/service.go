@@ -1,14 +1,16 @@
 package service
 
 import (
-	"auth/internal/model"
 	"context"
+
 	"google.golang.org/protobuf/types/known/emptypb"
+
+	"auth/internal/model"
 )
 
 type UserService interface {
-	CreateUser(ctx context.Context, in *model.CreateUserRequest) (int64, error)
-	GetUser(ctx context.Context, userID int64) (*model.GetUserResponse, error)
-	UpdateUser(ctx context.Context, in *model.UpdateUserRequest) (*emptypb.Empty, error)
-	DeleteUser(ctx context.Context, userID int64) (*emptypb.Empty, error)
+	Create(ctx context.Context, in *model.CreateUserRequest) (int64, error)
+	Get(ctx context.Context, userID int64) (*model.GetUserResponse, error)
+	Update(ctx context.Context, in *model.UpdateUserRequest) (*emptypb.Empty, error)
+	Delete(ctx context.Context, userID int64) (*emptypb.Empty, error)
 }
