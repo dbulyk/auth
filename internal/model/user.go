@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// CreateUserRequest является сервисной моделью данных для запроса создания пользователя
 type CreateUserRequest struct {
 	Name            string
 	Email           string
@@ -14,8 +15,9 @@ type CreateUserRequest struct {
 	Role            string
 }
 
+// GetUserResponse является сервисной моделью данных для ответа получения данных пользователя
 type GetUserResponse struct {
-	Id        int64
+	ID        int64
 	Name      string
 	Email     string
 	Tag       string
@@ -24,8 +26,9 @@ type GetUserResponse struct {
 	UpdatedAt sql.NullTime
 }
 
+// UpdateUserRequest является сервисной моделью данных для запроса обновления данных пользователя
 type UpdateUserRequest struct {
-	Id              int64
+	ID              int64
 	Name            string
 	Email           string
 	Tag             string

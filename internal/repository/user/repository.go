@@ -13,7 +13,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 
 	"auth/internal/model"
 	"auth/internal/repository"
@@ -25,6 +24,7 @@ type repo struct {
 	db *pgxpool.Pool
 }
 
+// NewRepository возвращает объект репозитория пользователя
 func NewRepository(db *pgxpool.Pool) repository.UserRepository {
 	return &repo{db: db}
 }
@@ -105,7 +105,7 @@ func (r *repo) GetUser(ctx context.Context, userID int64) (*model.GetUserRespons
 	)
 	user := modelRepo.GetUserResponse{}
 	err = r.db.QueryRow(ctx, query, args...).Scan(
-		&user.Id,
+		&user.ID,
 		&user.Name,
 		&user.Email,
 		&user.Tag,
@@ -122,9 +122,9 @@ func (r *repo) GetUser(ctx context.Context, userID int64) (*model.GetUserRespons
 	return converter.ToUserFromRepo(&user), nil
 }
 
-func (r *repo) UpdateUser(ctx context.Context, in *model.UpdateUserRequest) (*emptypb.Empty, error) {
+func (r *repo) UpdateUser(ctx context.Context, in *model.UpdateUserRequest) error {
 	if in.Password != in.PasswordConfirm {
-		return nil, status.Error(codes.FailedPrecondition, "пароли не совпадают")
+		return status.Error(codes.FailedPrecondition, "пароли не совпадают")
 	}
 
 	sBuilder := sq.Select("email", "tag").
@@ -136,7 +136,7 @@ func (r *repo) UpdateUser(ctx context.Context, in *model.UpdateUserRequest) (*em
 
 	query, args, err := sBuilder.ToSql()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var (
@@ -146,13 +146,13 @@ func (r *repo) UpdateUser(ctx context.Context, in *model.UpdateUserRequest) (*em
 
 	err = r.db.QueryRow(ctx, query, args...).Scan(&email, &tag)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
-		return nil, err
+		return err
 	}
 
 	if len(email) > 0 {
-		return nil, errors.New("пользователь с таким email уже существует")
+		return errors.New("пользователь с таким email уже существует")
 	} else if len(tag) > 0 {
-		return nil, errors.New("пользователь с таким тегом уже существует")
+		return errors.New("пользователь с таким тегом уже существует")
 	}
 
 	h := hmac.New(sha256.New, []byte("test")) //TODO добавить обработку хеша
@@ -167,35 +167,35 @@ func (r *repo) UpdateUser(ctx context.Context, in *model.UpdateUserRequest) (*em
 			"role":       in.Role,
 			"updated_at": time.Now(),
 			"password":   pwdHash}).
-		Where(sq.Eq{"id": in.Id}).
+		Where(sq.Eq{"id": in.ID}).
 		PlaceholderFormat(sq.Dollar)
 
 	query, args, err = builder.ToSql()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	_, err = r.db.Exec(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &emptypb.Empty{}, nil
+	return nil
 }
 
-func (r *repo) DeleteUser(ctx context.Context, userID int64) (*emptypb.Empty, error) {
+func (r *repo) DeleteUser(ctx context.Context, userID int64) error {
 	builder := sq.Delete("users").
 		Where(sq.Eq{"id": userID}).
 		PlaceholderFormat(sq.Dollar)
 
 	query, args, err := builder.ToSql()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	_, err = r.db.Exec(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &emptypb.Empty{}, nil
+	return nil
 }

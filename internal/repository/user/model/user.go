@@ -5,8 +5,9 @@ import (
 	"time"
 )
 
+// GetUserResponse является моделью данных, которая используется для получения пользователя
 type GetUserResponse struct {
-	Id        int64
+	ID        int64
 	Name      string
 	Email     string
 	Tag       string

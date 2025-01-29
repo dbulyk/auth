@@ -8,8 +8,9 @@ import (
 	desc "auth/pkg/auth_v1"
 )
 
+// DeleteUser является имплементацией api для удаления пользователя
 func (i *Implementation) DeleteUser(ctx context.Context, in *desc.DeleteUserRequest) (*emptypb.Empty, error) {
-	_, err := i.userService.Delete(ctx, in.GetId())
+	err := i.userService.Delete(ctx, in.GetId())
 	if err != nil {
 		return nil, err
 	}
