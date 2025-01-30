@@ -17,7 +17,8 @@ import (
 type key string
 
 const (
-	txKey key = "tx"
+	// TxKey сахар для вызова транзакции
+	TxKey key = "tx"
 )
 
 type pg struct {
@@ -59,7 +60,7 @@ func (p *pg) ScanAllContext(ctx context.Context, dest interface{}, q db.Query, a
 func (p *pg) ExecContext(ctx context.Context, q db.Query, args ...interface{}) (pgconn.CommandTag, error) {
 	logQuery(ctx, q, args...)
 
-	tx, ok := ctx.Value(txKey).(pgx.Tx)
+	tx, ok := ctx.Value(TxKey).(pgx.Tx)
 	if ok {
 		return tx.Exec(ctx, q.QueryRaw, args...)
 	}
@@ -71,7 +72,7 @@ func (p *pg) ExecContext(ctx context.Context, q db.Query, args ...interface{}) (
 func (p *pg) QueryContext(ctx context.Context, q db.Query, args ...interface{}) (pgx.Rows, error) {
 	logQuery(ctx, q, args...)
 
-	tx, ok := ctx.Value(txKey).(pgx.Tx)
+	tx, ok := ctx.Value(TxKey).(pgx.Tx)
 	if ok {
 		return tx.Query(ctx, q.QueryRaw, args...)
 	}
@@ -83,7 +84,7 @@ func (p *pg) QueryContext(ctx context.Context, q db.Query, args ...interface{}) 
 func (p *pg) QueryRowContext(ctx context.Context, q db.Query, args ...interface{}) pgx.Row {
 	logQuery(ctx, q, args...)
 
-	tx, ok := ctx.Value(txKey).(pgx.Tx)
+	tx, ok := ctx.Value(TxKey).(pgx.Tx)
 	if ok {
 		return tx.QueryRow(ctx, q.QueryRaw, args...)
 	}
@@ -108,7 +109,7 @@ func (p *pg) Close() {
 
 // MakeContextTx создает контекст для транзакции
 func MakeContextTx(ctx context.Context, tx pgx.Tx) context.Context {
-	return context.WithValue(ctx, txKey, tx)
+	return context.WithValue(ctx, TxKey, tx)
 }
 
 func logQuery(ctx context.Context, q db.Query, args ...interface{}) {

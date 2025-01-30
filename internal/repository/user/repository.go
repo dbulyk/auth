@@ -88,7 +88,7 @@ func (r *repo) CreateUser(ctx context.Context, in *model.CreateUserRequest) (int
 	}
 
 	var userID int64
-	err = r.db.DB().ScanOneContext(ctx, userID, q, args...)
+	err = r.db.DB().ScanOneContext(ctx, &userID, q, args...)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return 0, status.Errorf(codes.NotFound, "пользователь не найден")
@@ -116,7 +116,7 @@ func (r *repo) GetUser(ctx context.Context, userID int64) (*model.GetUserRespons
 	}
 
 	user := modelRepo.GetUserResponse{}
-	err = r.db.DB().ScanOneContext(ctx, user, q, args...)
+	err = r.db.DB().ScanOneContext(ctx, &user, q, args...)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, status.Errorf(codes.NotFound, "пользователь не найден")

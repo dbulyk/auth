@@ -7,6 +7,7 @@ import (
 	"auth/internal/api"
 	"auth/internal/client/db"
 	"auth/internal/client/db/pg"
+	"auth/internal/client/db/trancsation"
 	"auth/internal/closer"
 	"auth/internal/config"
 	"auth/internal/config/env"
@@ -20,6 +21,7 @@ type serviceProvider struct {
 	grpcConfig config.GRPCConfig
 	pgConfig   config.PGConfig
 	dbc        db.Client
+	txManager  db.TxManager
 
 	userRepo           repository.UserRepository
 	userService        service.UserService
@@ -77,6 +79,14 @@ func (sp *serviceProvider) DBClient(ctx context.Context) db.Client {
 	return sp.dbc
 }
 
+func (sp *serviceProvider) TxManager(ctx context.Context) db.TxManager {
+	if sp.txManager == nil {
+		sp.txManager = trancsation.NewTransactionManager(sp.DBClient(ctx).DB())
+	}
+
+	return sp.txManager
+}
+
 func (sp *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if sp.userRepo == nil {
 		r := repo.NewRepository(sp.DBClient(ctx))
@@ -87,7 +97,7 @@ func (sp *serviceProvider) UserRepository(ctx context.Context) repository.UserRe
 
 func (sp *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if sp.userService == nil {
-		s := serv.NewUserService(sp.UserRepository(ctx))
+		s := serv.NewUserService(sp.UserRepository(ctx), sp.TxManager(ctx))
 		sp.userService = s
 	}
 	return sp.userService
