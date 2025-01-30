@@ -9,13 +9,11 @@ import (
 type Implementation struct {
 	desc.UnimplementedAuthV1Server
 	userService service.UserService
-	hashKey     string
 }
 
 // NewImplementation возвращает объект имплементации сервиса
-func NewImplementation(userService service.UserService, hashKey string) *Implementation {
+func NewImplementation(userService service.UserService) *Implementation {
 	return &Implementation{
 		userService: userService,
-		hashKey:     hashKey,
 	}
 }
