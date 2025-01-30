@@ -10,10 +10,10 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"auth/internal/client/db"
 	"auth/internal/model"
 	"auth/internal/repository"
 	"auth/internal/repository/user/converter"
@@ -21,11 +21,11 @@ import (
 )
 
 type repo struct {
-	db *pgxpool.Pool
+	db db.Client
 }
 
 // NewRepository возвращает объект репозитория пользователя
-func NewRepository(db *pgxpool.Pool) repository.UserRepository {
+func NewRepository(db db.Client) repository.UserRepository {
 	return &repo{db: db}
 }
 
@@ -46,12 +46,17 @@ func (r *repo) CreateUser(ctx context.Context, in *model.CreateUserRequest) (int
 		return 0, err
 	}
 
+	q := db.Query{
+		Name:     "user_repository.Create_CheckUser",
+		QueryRaw: query,
+	}
+
 	var (
 		email string
 		tag   string
 	)
 
-	err = r.db.QueryRow(ctx, query, args...).Scan(&email, &tag)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&email, &tag)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return 0, err
 	}
@@ -77,8 +82,13 @@ func (r *repo) CreateUser(ctx context.Context, in *model.CreateUserRequest) (int
 		return 0, err
 	}
 
+	q = db.Query{
+		Name:     "user_repository.Create_InsertUser",
+		QueryRaw: query,
+	}
+
 	var userID int64
-	err = r.db.QueryRow(ctx, query, args...).Scan(&userID)
+	err = r.db.DB().ScanOneContext(ctx, userID, q, args...)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return 0, status.Errorf(codes.NotFound, "пользователь не найден")
@@ -99,19 +109,14 @@ func (r *repo) GetUser(ctx context.Context, userID int64) (*model.GetUserRespons
 	if err != nil {
 		return nil, err
 	}
-	var (
-		createdAt time.Time
-		updatedAt time.Time
-	)
+
+	q := db.Query{
+		Name:     "user_repository.Get",
+		QueryRaw: query,
+	}
+
 	user := modelRepo.GetUserResponse{}
-	err = r.db.QueryRow(ctx, query, args...).Scan(
-		&user.ID,
-		&user.Name,
-		&user.Email,
-		&user.Tag,
-		&user.Role,
-		&createdAt,
-		&updatedAt)
+	err = r.db.DB().ScanOneContext(ctx, user, q, args...)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, status.Errorf(codes.NotFound, "пользователь не найден")
@@ -139,12 +144,17 @@ func (r *repo) UpdateUser(ctx context.Context, in *model.UpdateUserRequest) erro
 		return err
 	}
 
+	q := db.Query{
+		Name:     "user_repository.Update_CheckUser",
+		QueryRaw: query,
+	}
+
 	var (
 		email string
 		tag   string
 	)
 
-	err = r.db.QueryRow(ctx, query, args...).Scan(&email, &tag)
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&email, &tag)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return err
 	}
@@ -175,7 +185,12 @@ func (r *repo) UpdateUser(ctx context.Context, in *model.UpdateUserRequest) erro
 		return err
 	}
 
-	_, err = r.db.Exec(ctx, query, args...)
+	q = db.Query{
+		Name:     "user_repository.Update_UpdateUser",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		return err
 	}
@@ -192,7 +207,12 @@ func (r *repo) DeleteUser(ctx context.Context, userID int64) error {
 		return err
 	}
 
-	_, err = r.db.Exec(ctx, query, args...)
+	q := db.Query{
+		Name:     "user_repository.Delete",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	if err != nil {
 		return err
 	}

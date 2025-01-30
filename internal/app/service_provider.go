@@ -4,9 +4,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-
 	"auth/internal/api"
+	"auth/internal/client/db"
+	"auth/internal/client/db/pg"
 	"auth/internal/closer"
 	"auth/internal/config"
 	"auth/internal/config/env"
@@ -19,7 +19,7 @@ import (
 type serviceProvider struct {
 	grpcConfig config.GRPCConfig
 	pgConfig   config.PGConfig
-	pgPool     *pgxpool.Pool
+	dbc        db.Client
 
 	userRepo           repository.UserRepository
 	userService        service.UserService
@@ -53,26 +53,34 @@ func (sp *serviceProvider) PGConfig() config.PGConfig {
 	return sp.pgConfig
 }
 
-func (sp *serviceProvider) PGPool(ctx context.Context) *pgxpool.Pool {
-	if sp.pgPool == nil {
-		conn, err := pgxpool.New(ctx, sp.PGConfig().DSN())
+func (sp *serviceProvider) DBClient(ctx context.Context) db.Client {
+	if sp.dbc == nil {
+		conn, err := pg.New(ctx, sp.PGConfig().DSN())
 		if err != nil {
 			log.Fatalf("failed to connect to database: %v", err)
 		}
 
+		err = conn.DB().Ping(ctx)
+		if err != nil {
+			log.Fatalf("failed to ping database: %v", err)
+		}
+
 		closer.Add(func() error {
-			conn.Close()
+			err = conn.Close()
+			if err != nil {
+				return err
+			}
 			return nil
 		})
-		sp.pgPool = conn
+		sp.dbc = conn
 	}
-	return sp.pgPool
+	return sp.dbc
 }
 
 func (sp *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if sp.userRepo == nil {
-		repo := repo.NewRepository(sp.PGPool(ctx))
-		sp.userRepo = repo
+		r := repo.NewRepository(sp.DBClient(ctx))
+		sp.userRepo = r
 	}
 	return sp.userRepo
 }
