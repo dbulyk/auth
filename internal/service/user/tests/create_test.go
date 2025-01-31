@@ -109,9 +109,9 @@ func TestCreate(t *testing.T) {
 			txManagerMock := tt.txManagerMock(mc)
 			serv := user.NewUserService(userRepoMock, txManagerMock)
 
-			chatId, err := serv.Create(tt.args.ctx, tt.args.req)
+			chatID, err := serv.Create(tt.args.ctx, tt.args.req)
 			require.Equal(t, tt.err, err)
-			require.Equal(t, tt.want, chatId)
+			require.Equal(t, tt.want, chatID)
 		})
 	}
 }
