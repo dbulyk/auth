@@ -4,11 +4,12 @@ import (
 	"context"
 	"log"
 
-	"auth/internal/api"
-	"auth/internal/client/db"
-	"auth/internal/client/db/pg"
-	"auth/internal/client/db/trancsation"
-	"auth/internal/closer"
+	"github.com/dbulyk/platform_common/pkg/closer"
+	"github.com/dbulyk/platform_common/pkg/db"
+	"github.com/dbulyk/platform_common/pkg/db/pg"
+	"github.com/dbulyk/platform_common/pkg/db/trancsation"
+
+	"auth/internal/api/user"
 	"auth/internal/config"
 	"auth/internal/config/env"
 	"auth/internal/repository"
@@ -25,7 +26,7 @@ type serviceProvider struct {
 
 	userRepo           repository.UserRepository
 	userService        service.UserService
-	userImplementation *api.Implementation
+	userImplementation *user.Implementation
 }
 
 func newServiceProvider() *serviceProvider {
@@ -103,9 +104,9 @@ func (sp *serviceProvider) UserService(ctx context.Context) service.UserService 
 	return sp.userService
 }
 
-func (sp *serviceProvider) UserImplementation(ctx context.Context) *api.Implementation {
+func (sp *serviceProvider) UserImplementation(ctx context.Context) *user.Implementation {
 	if sp.userImplementation == nil {
-		i := api.NewImplementation(sp.UserService(ctx))
+		i := user.NewImplementation(sp.UserService(ctx))
 		sp.userImplementation = i
 	}
 	return sp.userImplementation

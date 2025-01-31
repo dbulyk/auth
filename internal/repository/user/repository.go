@@ -9,11 +9,11 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/dbulyk/platform_common/pkg/db"
 	"github.com/jackc/pgx/v5"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"auth/internal/client/db"
 	"auth/internal/model"
 	"auth/internal/repository"
 	"auth/internal/repository/user/converter"

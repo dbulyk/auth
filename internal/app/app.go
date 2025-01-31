@@ -5,10 +5,10 @@ import (
 	"log"
 	"net"
 
+	"github.com/dbulyk/platform_common/pkg/closer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	"auth/internal/closer"
 	"auth/internal/config"
 	desc "auth/pkg/auth_v1"
 )

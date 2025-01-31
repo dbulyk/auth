@@ -34,9 +34,9 @@ func ToUpdateUserRequestFromAPI(in *desc.UpdateUserRequest) *model.UpdateUserReq
 }
 
 var roleMapping = map[string]desc.Role{
-	"USER":                  desc.Role_ROLE_USER,
-	"ADMIN":                 desc.Role_ROLE_ADMIN,
 	"ENUM_NAME_UNSPECIFIED": desc.Role_ENUM_NAME_UNSPECIFIED,
+	"ROLE_USER":             desc.Role_ROLE_USER,
+	"ROLE_ADMIN":            desc.Role_ROLE_ADMIN,
 }
 
 // ToGetUserResponseFromService конвертирует запрос на получение данных пользователя
