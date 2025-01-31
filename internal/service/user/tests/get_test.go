@@ -1,6 +1,15 @@
 package tests
 
 import (
+	"context"
+	"database/sql"
+	"fmt"
+	"testing"
+
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/gojuno/minimock/v3"
+	"github.com/stretchr/testify/require"
+
 	"auth/internal/client/db"
 	mocks2 "auth/internal/client/db/mocks"
 	"auth/internal/model"
@@ -8,13 +17,6 @@ import (
 	"auth/internal/repository/mocks"
 	"auth/internal/service/user"
 	desc "auth/pkg/auth_v1"
-	"context"
-	"database/sql"
-	"fmt"
-	"github.com/brianvoe/gofakeit/v6"
-	"github.com/gojuno/minimock/v3"
-	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestGet(t *testing.T) {
