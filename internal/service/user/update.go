@@ -9,7 +9,7 @@ import (
 func (s *service) Update(ctx context.Context, in *model.UpdateUserRequest) error {
 	err := s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
 		var txErr error
-		txErr = s.userRepo.DeleteUser(ctx, in.ID)
+		txErr = s.userRepo.UpdateUser(ctx, in)
 		return txErr
 	})
 	if err != nil {
