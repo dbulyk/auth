@@ -7,11 +7,11 @@ import (
 	"testing"
 
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/dbulyk/platform_common/pkg/db"
+	mocks2 "github.com/dbulyk/platform_common/pkg/db/mocks"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/require"
 
-	"auth/internal/client/db"
-	mocks2 "auth/internal/client/db/mocks"
 	"auth/internal/model"
 	"auth/internal/repository"
 	"auth/internal/repository/mocks"

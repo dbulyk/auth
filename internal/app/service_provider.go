@@ -4,11 +4,12 @@ import (
 	"context"
 	"log"
 
+	"github.com/dbulyk/platform_common/pkg/closer"
+	"github.com/dbulyk/platform_common/pkg/db"
+	"github.com/dbulyk/platform_common/pkg/db/pg"
+	"github.com/dbulyk/platform_common/pkg/db/trancsation"
+
 	"auth/internal/api/user"
-	"auth/internal/client/db"
-	"auth/internal/client/db/pg"
-	"auth/internal/client/db/trancsation"
-	"auth/internal/closer"
 	"auth/internal/config"
 	"auth/internal/config/env"
 	"auth/internal/repository"
