@@ -1,6 +1,8 @@
 package config
 
 import (
+	"time"
+
 	"github.com/joho/godotenv"
 )
 
@@ -17,6 +19,14 @@ type GRPCConfig interface {
 // HashConfig хранит ключ для хеширования паролей
 type HashConfig interface {
 	Key() string
+}
+
+// RedisConfig описывает контракт взаимодействия с конфигом редиса
+type RedisConfig interface {
+	Address() string
+	ConnectionTimeout() time.Duration
+	MaxIdle() int
+	IdleTimeout() time.Duration
 }
 
 // Load загружает во флаг считываемый путь
