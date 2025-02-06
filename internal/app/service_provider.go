@@ -15,9 +15,8 @@ import (
 	"auth/internal/client/cache/redis"
 	"auth/internal/config"
 	"auth/internal/config/env"
-	userRepo "auth/internal/repository/user"
-	repo "auth/internal/repository/user/pg"
-	redis2 "auth/internal/repository/user/redis"
+	"auth/internal/repository"
+	repo "auth/internal/repository/user"
 	"auth/internal/service"
 	serv "auth/internal/service/user"
 )
@@ -33,8 +32,7 @@ type serviceProvider struct {
 	redisPool   *redigo.Pool
 	redisClient cache.RedisClient
 
-	userRepo           userRepo.Repository
-	userCache          userRepo.Cache
+	userRepo           repository.UserRepository
 	userService        service.UserService
 	userImplementation *user.Implementation
 }
@@ -66,17 +64,17 @@ func (sp *serviceProvider) PGConfig() config.PGConfig {
 	return sp.pgConfig
 }
 
-func (sp *serviceProvider) RedisConfig() config.RedisConfig {
-	if sp.redisConfig == nil {
+func (s *serviceProvider) RedisConfig() config.RedisConfig {
+	if s.redisConfig == nil {
 		cfg, err := env.NewRedisConfig()
 		if err != nil {
 			log.Fatalf("failed to get redis config: %s", err.Error())
 		}
 
-		sp.redisConfig = cfg
+		s.redisConfig = cfg
 	}
 
-	return sp.redisConfig
+	return s.redisConfig
 }
 
 func (sp *serviceProvider) DBClient(ctx context.Context) db.Client {
@@ -133,7 +131,7 @@ func (sp *serviceProvider) RedisClient() cache.RedisClient {
 	return sp.redisClient
 }
 
-func (sp *serviceProvider) UserRepository(ctx context.Context) userRepo.Repository {
+func (sp *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
 	if sp.userRepo == nil {
 		r := repo.NewRepository(sp.DBClient(ctx))
 		sp.userRepo = r
@@ -141,17 +139,9 @@ func (sp *serviceProvider) UserRepository(ctx context.Context) userRepo.Reposito
 	return sp.userRepo
 }
 
-func (sp *serviceProvider) UserCache() userRepo.Cache {
-	if sp.userCache == nil {
-		c := redis2.NewUserCache(sp.RedisClient())
-		sp.userCache = c
-	}
-	return sp.userCache
-}
-
 func (sp *serviceProvider) UserService(ctx context.Context) service.UserService {
 	if sp.userService == nil {
-		s := serv.NewUserService(sp.UserRepository(ctx), sp.TxManager(ctx), sp.UserCache())
+		s := serv.NewUserService(sp.UserRepository(ctx), sp.TxManager(ctx))
 		sp.userService = s
 	}
 	return sp.userService
