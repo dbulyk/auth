@@ -8,11 +8,8 @@ import (
 	"github.com/dbulyk/platform_common/pkg/db"
 	"github.com/dbulyk/platform_common/pkg/db/pg"
 	"github.com/dbulyk/platform_common/pkg/db/trancsation"
-	redigo "github.com/gomodule/redigo/redis"
 
 	"auth/internal/api/user"
-	"auth/internal/client/cache"
-	"auth/internal/client/cache/redis"
 	"auth/internal/config"
 	"auth/internal/config/env"
 	"auth/internal/repository"
@@ -22,15 +19,10 @@ import (
 )
 
 type serviceProvider struct {
-	grpcConfig  config.GRPCConfig
-	pgConfig    config.PGConfig
-	redisConfig config.RedisConfig
-
-	dbc       db.Client
-	txManager db.TxManager
-
-	redisPool   *redigo.Pool
-	redisClient cache.RedisClient
+	grpcConfig config.GRPCConfig
+	pgConfig   config.PGConfig
+	dbc        db.Client
+	txManager  db.TxManager
 
 	userRepo           repository.UserRepository
 	userService        service.UserService
@@ -64,19 +56,6 @@ func (sp *serviceProvider) PGConfig() config.PGConfig {
 	return sp.pgConfig
 }
 
-func (s *serviceProvider) RedisConfig() config.RedisConfig {
-	if s.redisConfig == nil {
-		cfg, err := env.NewRedisConfig()
-		if err != nil {
-			log.Fatalf("failed to get redis config: %s", err.Error())
-		}
-
-		s.redisConfig = cfg
-	}
-
-	return s.redisConfig
-}
-
 func (sp *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if sp.dbc == nil {
 		conn, err := pg.New(ctx, sp.PGConfig().DSN())
@@ -107,28 +86,6 @@ func (sp *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	}
 
 	return sp.txManager
-}
-
-func (sp *serviceProvider) RedisPool() *redigo.Pool {
-	if sp.redisPool == nil {
-		sp.redisPool = &redigo.Pool{
-			MaxIdle:     sp.RedisConfig().MaxIdle(),
-			IdleTimeout: sp.RedisConfig().IdleTimeout(),
-			DialContext: func(ctx context.Context) (redigo.Conn, error) {
-				return redigo.DialContext(ctx, "tcp", sp.RedisConfig().Address())
-			},
-		}
-	}
-
-	return sp.redisPool
-}
-
-func (sp *serviceProvider) RedisClient() cache.RedisClient {
-	if sp.redisClient == nil {
-		sp.redisClient = redis.NewClient(sp.RedisPool(), sp.RedisConfig())
-	}
-
-	return sp.redisClient
 }
 
 func (sp *serviceProvider) UserRepository(ctx context.Context) repository.UserRepository {
