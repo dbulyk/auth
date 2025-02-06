@@ -1,7 +1,8 @@
 package user
 
 import (
-	"auth/internal/client/db"
+	"github.com/dbulyk/platform_common/pkg/db"
+
 	"auth/internal/repository"
 )
 
